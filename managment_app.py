@@ -1,6 +1,11 @@
 
 #managment app client, data publisher
 
+"""
+-takes console input
+-send information(name, prefered temperature) of each resident of the house
+"""
+
 import time
 import mqtt
 
