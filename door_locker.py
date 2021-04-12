@@ -1,2 +1,2 @@
 
-#smart door locker client
+#smart door locker client, data publisher
