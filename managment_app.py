@@ -9,11 +9,17 @@
 import time
 import mqtt
 
+print("Starting Managment App\n")
+
 ma_client = mqtt.connect_mqtt()           #connect to MQTT server and return a client object
 ma_client.loop_start()                    #maintain network traffic flow with the broker, does not block
 
+time.sleep(1)
+
 while True:
-  mqtt.publish(ma_client, "/python/mqtt", "this is a message")   #send message, publish(client, topic, message)
-  time.sleep(1)                                                  #delay 1s
+  print("Enter 'name,temp' without quotes: ", end='')                                   #prompt user
+  person_preference = input()                                          #take console input
+  mqtt.publish(ma_client, "/data/preference", str(person_preference))  #publish input data
+  print() #print new line for prettyness
 
 

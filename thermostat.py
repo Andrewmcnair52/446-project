@@ -13,14 +13,36 @@
 
 import mqtt
 
+print("Starting Thermostat\n")
+
 
 def on_message(client, userdata, msg):  #message received callback
-        print(f"Message received: `{msg.payload.decode()}`")
+  
+  print("Message received from topic: "+msg.topic)
+  
+  if msg.topic=="/data/preference": #handle temperature prefrence
+  
+    input = msg.payload.decode()
+    if ',' in input:                  #check that we have a delimeter
+      name, temp = input.split(',')   #split by delimeter
+      if not len(name):
+        print("invalid preference, no name specified")
+      elif not len(temp):
+        print("invalid preference, no temperature specified")
+      else:
+        print("name: "+name)
+        print("temperature: "+temp)
+    else:
+       print("no delimeter found, correct format is: name,temperature")
+  
+  elif msg.topic=="/data/enter":  #handle person entered
 
+    print("Person has entered: " + msg.payload.decode())
 
+  print()   #print line space between outpu blocks
 
 th_client = mqtt.connect_mqtt()             #connect to MQTT server and return a client object
-th_client.subscribe("/python/mqtt")         #subscribe to a topic
+th_client.subscribe("/data/#")              #subscribe to a topic
 th_client.on_message = on_message           #set on_message callback to run when message is received
 
 th_client.loop_forever()    #maintain network traffic flow with the broker, blocks execution
