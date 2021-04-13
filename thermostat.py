@@ -53,8 +53,6 @@ def on_message(client, userdata, msg):  #message received callback
   
   elif msg.topic=="/data/enter":  #handle person entered/left
     
-    print("Person has entered: " + msg.payload.decode())
-    
     input = msg.payload.decode()
     if ',' in input:                  #check that we have a delimeter
     
@@ -66,6 +64,7 @@ def on_message(client, userdata, msg):  #message received callback
           inside_list.append(name)
           calculate_temperature()
         #output
+        print("Person has entered: "+name)
         print("people inside: ", end='')
         print(inside_list)
         print("temperature set to: "+str(temperature))
@@ -74,6 +73,7 @@ def on_message(client, userdata, msg):  #message received callback
           inside_list.remove(name)
           calculate_temperature()
         #output
+        print("Person has left: "+name)
         print("people inside: ", end='')
         print(inside_list)
         print("temperature set to: "+str(temperature))
