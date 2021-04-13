@@ -13,6 +13,12 @@
 
 import mqtt
 
+#define globals
+temperature = 15
+person_list = []       #lists all persons
+temperature_list = []  #lists all temperatures
+inside_list = []       #lists persons inside
+
 print("Starting Thermostat\n")
 
 
@@ -20,7 +26,7 @@ def on_message(client, userdata, msg):  #message received callback
   
   print("Message received from topic: "+msg.topic)
   
-  if msg.topic=="/data/preference": #handle temperature prefrence
+  if msg.topic=="/data/preference": #handle set temperature prefrence
   
     input = msg.payload.decode()
     if ',' in input:                  #check that we have a delimeter
@@ -30,16 +36,69 @@ def on_message(client, userdata, msg):  #message received callback
       elif not len(temp):
         print("invalid preference, no temperature specified")
       else:
-        print("name: "+name)
-        print("temperature: "+temp)
-    else:
+        #input is valid, update temperature preferences
+        if name in person_list: #if name is already in person_list, update temperature
+          temperature_list[ person_list.index(name) ] = float(temp)
+        else: #else append new person and temperature
+          person_list.append(name)
+          temperature_list.append(float(temp))
+        #output
+        print("preferences updated\npreferences: ", end='')
+        for x in person_list:
+          print(x+":"+str(temperature_list[person_list.index(x)])+", ", end='')
+        print()
+          
+    else: #else if delimeter not present in message
        print("no delimeter found, correct format is: name,temperature")
   
-  elif msg.topic=="/data/enter":  #handle person entered
-
+  elif msg.topic=="/data/enter":  #handle person entered/left
+    
     print("Person has entered: " + msg.payload.decode())
+    
+    input = msg.payload.decode()
+    if ',' in input:                  #check that we have a delimeter
+    
+      name, state = input.split(',')   #split by delimeter
+      if not len(name):
+        print("invalid input, no name specified")
+      elif state=='e':  #handle entering
+        if not name in inside_list:
+          inside_list.append(name)
+          calculate_temperature()
+        #output
+        print("people inside: ", end='')
+        print(inside_list)
+        print("temperature set to: "+str(temperature))
+      elif state=='l':  #handle leaving
+        if name in inside_list:
+          inside_list.remove(name)
+          calculate_temperature()
+        #output
+        print("people inside: ", end='')
+        print(inside_list)
+        print("temperature set to: "+str(temperature))
+      else: #handle invalid input
+        print("invalid input, format must be: name,e or name,l")
+      
+    else: #else if delimeter not present in message
+       print("no delimeter found, correct format is: name,e or name,l")
 
-  print()   #print line space between outpu blocks
+  print()   #print line space between output blocks
+  
+def calculate_temperature():
+
+  sum = 0
+  count = 0
+  global temperature
+  for x in inside_list:
+    if x in person_list:
+      sum += temperature_list[ person_list.index(x) ]
+      count += 1
+  
+  if count>0:
+    temperature = sum/count
+  else:
+    temperature = 15
 
 th_client = mqtt.connect_mqtt()             #connect to MQTT server and return a client object
 th_client.subscribe("/data/#")              #subscribe to a topic
